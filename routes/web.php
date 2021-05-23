@@ -12,8 +12,12 @@
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    //return view('welcome');
+    return view('welcome', [
+        'users' => DB::table('users')->where('status',1)->paginate(10)
+    ]);
 });
 
 
 Route::post('/storeData', 'UserController@store');
+Route::get('/delete/id/{id}', 'UserController@delete')->name('delete');

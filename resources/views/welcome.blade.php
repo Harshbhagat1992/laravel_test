@@ -11,60 +11,14 @@
         <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css')}}">
         <script src="{{ asset('js/jquery.min.js') }}"></script>
         <script src="{{ asset('js/bootstrap.min.js') }}"></script>
-
+        <script src="{{ asset('js/jquery.validate.min.js') }}"></script>
+        <script src="{{ asset('js/additional-methods.min.js') }}"></script>
         <!-- Styles -->
-        <!-- <style>
-            html, body {
-                background-color: #fff;
-                color: #636b6f;
-                font-family: 'Nunito', sans-serif;
-                font-weight: 200;
-                height: 100vh;
-                margin: 0;
+        <style>
+            .error{
+                color:red;
             }
-
-            .full-height {
-                height: 100vh;
-            }
-
-            .flex-center {
-                align-items: center;
-                display: flex;
-                justify-content: center;
-            }
-
-            .position-ref {
-                position: relative;
-            }
-
-            .top-right {
-                position: absolute;
-                right: 10px;
-                top: 18px;
-            }
-
-            .content {
-                text-align: center;
-            }
-
-            .title {
-                font-size: 84px;
-            }
-
-            .links > a {
-                color: #636b6f;
-                padding: 0 25px;
-                font-size: 13px;
-                font-weight: 600;
-                letter-spacing: .1rem;
-                text-decoration: none;
-                text-transform: uppercase;
-            }
-
-            .m-b-md {
-                margin-bottom: 30px;
-            }
-        </style> -->
+        </style>
     </head>
     <body>
     <div class="container">
@@ -79,6 +33,51 @@
             @foreach ($errors->all() as $error)
                <span class="text-danger"> {{ $error }} </span><br/>
             @endforeach
+            @if(session()->has('message.level'))
+                <div class="alert alert-{{ session('message.level') }}"> 
+                {!! session('message.content') !!}
+                </div>
+            @endif
+            </div>            
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Avtar</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Join Date</th>
+                        <th scope="col">Experience</th>
+                        <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($users as $user)
+                        <tr>
+                        <th scope="row">{{ $user->id }}</th>
+                        <th scope="row"><img width="100" src="{{ asset('uploads').'/'.$user->image}}" class="img img-responsive"></th>
+                        <td>{{ $user->name }}</td>
+                        <td>{{ $user->email }}</td>
+                        <td>{{ $user->joining_date }}</td>
+                        <td>
+                        <?php
+                            $date1 = new DateTime(".$user->leaving_date.");
+                            $date2 = new DateTime(".$user->joining_date.");
+                            $diff = $date1->diff($date2);                       
+                            echo $diff->y . " years, " . $diff->m." months";
+                        ?>
+                        <td>
+                        <td><a href="{{ route('delete', ['id' => $user->id]) }}" onclick="return confirm('Are you sure?')"><button class="btn btn-danger">Delete</button></a></td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>        
+            <div class="col-md-12 text-center">
+            {{ $users->links() }}
             </div>
         </div>
     </div>
@@ -93,30 +92,30 @@
                 <h4 class="modal-title">Add New Record</h4>
             </div>
             <div class="modal-body">
-                <form action="/storeData" method="post" enctype="multipart/form-data">
+                <form id="commentForm" action="/storeData" method="post" enctype="multipart/form-data">
                 @csrf
                     <div class="form-group">
                         <label for="email">Email address:</label>
-                        <input type="email" name="email" class="form-control" id="email">
+                        <input type="email" name="email" class="form-control required email" id="email">
                     </div>
                     <div class="form-group">
                         <label for="pwd">Full Name:</label>
-                        <input type="text" name="name" class="form-control" id="pwd">
+                        <input type="text" name="name" class="form-control required" id="name">
                     </div>
                     <div class="form-group">
                         <label for="pwd">Date of Joining</label>
-                        <input type="date" name="joining_date" class="form-control" id="pwd">
+                        <input type="date" name="joining_date" class="form-control required" id="joining_date">
                     </div>
                     <div class="form-group">
                         <label for="pwd">Date of Leaving</label>
-                        <input type="date" name="leaving_date" class="form-control" id="pwd">
+                        <input type="date" name="leaving_date" class="form-control leave" id="leaving_date">
                     </div>
                     <div class="checkbox">
-                        <label><input value= "1" type="checkbox"> Still working</label>
+                        <label><input name="working" class="leave" id="working" value= "1" type="checkbox"> Still working</label>
                     </div>
                     <div class="form-group">
                         <label for="pwd">Upload Image</label>
-                        <input type="file" name="user_image" class="form-control" id="pwd">
+                        <input type="file" name="photo" class="form-control required" id="photo">
                     </div>
                     <button type="submit" class="btn btn-default">Submit</button>
                 </form>
@@ -129,4 +128,23 @@
         </div>
         </div>
     </body>
+    <script>
+        $(document).ready(function() {
+		// validate the comment form when it is submitted
+		$("#commentForm").validate({
+            rules: {
+                leaving_date: {
+                require_from_group: [1, ".leave"]
+                },
+                working: {
+                require_from_group: [1, ".leave"]
+                },
+                photo: {
+                    required: true,
+                    extension: "jpg|jpeg|png"
+                }
+            }
+        });
+        });
+    </script>
 </html>
